@@ -32,13 +32,19 @@ export default class MenuBar extends Vue {
 </script>
 
 <style scoped lang="stylus">
+@import "../assets/stylus/var.styl"
+
 .menu-bar
+  position absolute
+  top 0
+  left 0
+  right 0
   display flex
-  height 30px
-  line-height 30px
+  height $menu-bar-height - 10px
+  line-height $menu-bar-height - 10px
   color #fff
   background-color #504d4d
-  padding 4px
+  padding 5px
   .btn
     font-size 14px
     border-radius 4px

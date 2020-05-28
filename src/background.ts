@@ -39,7 +39,18 @@ function createWindow () {
   })
 }
 
+// 新建文件
+ipcMain.on('create-file', async (event: any) => {
+  console.log(event)
+})
+
+// 打开文件
 ipcMain.on('open-file', async (event: any) => {
+  console.log(event)
+})
+
+// 保存文件
+ipcMain.on('save-file', async (event: any) => {
   console.log(event)
 })
 
