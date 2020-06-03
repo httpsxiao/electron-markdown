@@ -1,16 +1,18 @@
 <template>
   <div id="app">
-    <MenuBar></MenuBar>
+    <MenuBar :currentArticle="currentArticle" currentId="currentId"></MenuBar>
     <div class="container">
-      <EditPanel></EditPanel>
+      <EditPanel v-if="currentArticle" :currentArticle="currentArticle"></EditPanel>
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import { ipcRenderer } from 'electron'
 import { Component, Vue } from 'vue-property-decorator'
 import MenuBar from './components/MenuBar.vue'
 import EditPanel from './components/EditPanel.vue'
+import Article from './data/Article'
 
 @Component({
   components: {
@@ -18,7 +20,18 @@ import EditPanel from './components/EditPanel.vue'
     EditPanel
   }
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  currentId = null
+  currentArticle: Article | null = null
+  articles: Article[] = []
+  created () {
+    ipcRenderer.on('opened-file',(event: any, filePath: string, content: string) => {
+      const article = new Article(content, filePath)
+      this.currentArticle = article
+      this.articles.unshift(article)
+    })
+  }
+}
 </script>
 
 <style lang="stylus">
