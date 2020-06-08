@@ -42,16 +42,16 @@ function createWindow () {
 }
 
 // 新建文件
-ipcMain.on('create-file', async event => {
-  console.log(event)
-})
+// ipcMain.on('create-file', async event => {
+//   const eventWindow = BrowserWindow.fromWebContents(event.sender)
+// })
 
 // 打开文件
 ipcMain.on('open-file', async event => {
   const eventWindow = BrowserWindow.fromWebContents(event.sender)
   const result = await dialog.showOpenDialog(eventWindow, {
     properties: ['openFile'],
-    filters: [{ name: 'markdown', extensions: ['md'] }]
+    filters: [{ name: 'markdown', extensions: ['md', 'markdown'] }]
   })
 
   if (!result.canceled && result.filePaths && result.filePaths[0]) {
@@ -61,8 +61,21 @@ ipcMain.on('open-file', async event => {
 })
 
 // 保存文件
-ipcMain.on('save-file', event => {
-  console.log(event)
+ipcMain.on('save-file', async (event, content, filePath) => {
+  if (filePath) {
+    fs.writeFileSync(filePath, content)
+    event.reply('saved-file')
+    return
+  }
+  const eventWindow = BrowserWindow.fromWebContents(event.sender)
+  const result = await dialog.showSaveDialog(eventWindow, {
+    title: '保存文件',
+    filters: [{ name: '文件', extensions: ['md', 'markdown'] }]
+  })
+  if (!result.canceled && result.filePath) {
+    fs.writeFileSync(result.filePath, content)
+    event.reply('saved-file', result.filePath)
+  }
 })
 
 // Quit when all windows are closed.

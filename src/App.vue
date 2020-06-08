@@ -1,6 +1,10 @@
 <template>
   <div id="app">
-    <MenuBar :currentArticle="currentArticle" currentId="currentId"></MenuBar>
+    <MenuBar
+      :currentArticle="currentArticle"
+      @createFile="createFile"
+      @saveFile="saveFile"
+    ></MenuBar>
     <div class="container">
       <EditPanel v-if="currentArticle" :currentArticle="currentArticle"></EditPanel>
     </div>
@@ -25,11 +29,27 @@ export default class App extends Vue {
   currentArticle: Article | null = null
   articles: Article[] = []
   created () {
-    ipcRenderer.on('opened-file',(event: any, filePath: string, content: string) => {
+    ipcRenderer.on('opened-file', (event: any, filePath: string, content: string) => {
       const article = new Article(content, filePath)
       this.currentArticle = article
       this.articles.unshift(article)
     })
+    ipcRenderer.on('saved-file', (event: any, filePath?: string) => {
+      if (filePath && this.currentArticle) {
+        this.currentArticle.filePath = filePath
+      }
+      alert('保存成功')
+    })
+  }
+  createFile () {
+    const article = new Article()
+    this.currentArticle = article
+    this.articles.unshift(article)
+  }
+  saveFile () {
+    if (this.currentArticle) {
+      ipcRenderer.send('save-file', this.currentArticle.content, this.currentArticle.filePath)
+    }
   }
 }
 </script>

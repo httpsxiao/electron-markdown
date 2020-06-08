@@ -13,20 +13,20 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue, Emit } from 'vue-property-decorator'
 import { ipcSend } from '../utils'
 
 @Component
 export default class MenuBar extends Vue {
   @Prop() private msg!: string
 
-  @ipcSend()
+  @Emit('createFile')
   createFile() { /* 新建文件 */ }
 
   @ipcSend()
   openFile() { /* 打开文件 */ }
 
-  @ipcSend()
+  @Emit('saveFile')
   saveFile() { /* 保存文件 */ }
 }
 </script>
