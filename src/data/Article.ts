@@ -7,7 +7,7 @@ export default class Artical {
   updated: string
   private _content = ''
 
-  constructor (content: string = '', filePath: string = '') {
+  constructor (content = '', filePath = '') {
     const time = '' + Date.now()
     this.id = time
     this.created = time

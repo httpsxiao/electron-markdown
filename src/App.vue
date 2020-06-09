@@ -14,6 +14,7 @@
 <script lang="ts">
 import { ipcRenderer } from 'electron'
 import { Component, Vue } from 'vue-property-decorator'
+import { ipcSend } from './utils'
 import MenuBar from './components/MenuBar.vue'
 import EditPanel from './components/EditPanel.vue'
 import Article from './data/Article'
@@ -29,16 +30,16 @@ export default class App extends Vue {
   currentArticle: Article | null = null
   articles: Article[] = []
   created () {
-    ipcRenderer.on('opened-file', (event: any, filePath: string, content: string) => {
+    ipcRenderer.on('opened-file', (event, filePath: string, content: string) => {
       const article = new Article(content, filePath)
       this.currentArticle = article
       this.articles.unshift(article)
     })
-    ipcRenderer.on('saved-file', (event: any, filePath?: string) => {
+    ipcRenderer.on('saved-file', (event, filePath?: string) => {
       if (filePath && this.currentArticle) {
         this.currentArticle.filePath = filePath
       }
-      alert('保存成功')
+      this.showToast('保存成功')
     })
   }
   createFile () {
@@ -50,6 +51,10 @@ export default class App extends Vue {
     if (this.currentArticle) {
       ipcRenderer.send('save-file', this.currentArticle.content, this.currentArticle.filePath)
     }
+  }
+  @ipcSend()
+  showToast(content: string) {
+    return content
   }
 }
 </script>

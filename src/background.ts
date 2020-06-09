@@ -3,11 +3,16 @@
 import path from 'path'
 import fs from 'fs'
 import { app, protocol, BrowserWindow, ipcMain, dialog } from 'electron'
+import Toast from './toast'
 import {
   createProtocol,
   /* installVueDevtools */
 } from 'vue-cli-plugin-electron-builder/lib'
 const isDevelopment = process.env.NODE_ENV !== 'production'
+
+const toast = new Toast({
+  width: 150
+})
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -40,6 +45,11 @@ function createWindow () {
     win = null
   })
 }
+
+ipcMain.on('show-toast', (event, content: string) => {
+  const eventWindow = BrowserWindow.fromWebContents(event.sender)
+  toast.show(eventWindow, content)
+})
 
 // 新建文件
 // ipcMain.on('create-file', async event => {
