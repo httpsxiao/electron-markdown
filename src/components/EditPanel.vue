@@ -6,7 +6,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Watch, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue } from 'vue-property-decorator'
 import Article from '../data/Article'
 import marked from 'marked'
 
@@ -38,8 +38,15 @@ export default class MenuBar extends Vue {
     font-size 14px
     padding 4px
     border 0
+    &::-webkit-scrollbar
+      display none
   .preview
     flex 1
-    border-left solid 1px #ccc
+    height 100%
+    overflow auto
     padding 4px
+    border-left solid 1px #ccc
+    box-sizing border-box
+    &::-webkit-scrollbar
+      display none
 </style>

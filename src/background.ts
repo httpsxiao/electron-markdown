@@ -41,6 +41,11 @@ function createWindow () {
     win.loadURL('app://./index.html')
   }
 
+  win.on('close', event => {
+    event.preventDefault()
+    win && win.webContents.send('close')
+  })
+
   win.on('closed', () => {
     win = null
   })
@@ -51,9 +56,10 @@ ipcMain.on('show-toast', (event, content: string) => {
   toast.show(eventWindow, content)
 })
 
-// 新建文件
-// ipcMain.on('create-file', async event => {
-//   const eventWindow = BrowserWindow.fromWebContents(event.sender)
+// 读取文件
+// ipcMain.on('read-file', (event, filePath: string, id: string) => {
+//   const content = fs.readFileSync(filePath, 'utf-8')
+//   event.reply('readed-file', content, filePath, id)
 // })
 
 // 打开文件
