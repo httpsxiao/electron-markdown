@@ -5,23 +5,14 @@ export default class Artical {
   filePath: string
   created: string
   updated: string
-  private _content = ''
+  content: string
 
-  constructor (content = '', filePath = '') {
+  constructor (content = '', filePath = '', id = '') {
     const time = '' + Date.now()
-    this.id = time
+    this.id = id || time
     this.created = time
     this.updated = time
-    this._content = content
+    this.content = content
     this.filePath = filePath
-  }
-
-  get content () {
-    return this._content
-  }
-
-  set content (value) {
-    this.updated = '' + Date.now()
-    this._content = value
   }
 }
