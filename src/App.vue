@@ -61,23 +61,32 @@ export default class App extends Vue {
       if (filePath && this.currentArticle) {
         this.currentArticle.filePath = filePath
       }
+      this.currentArticle.change = false
       this.showToast('保存成功')
     })
     ipcRenderer.on('close', () => {
-      // remote.dialog.showMessageBox(remote.getCurrentWindow(), {
-      //   type: 'warning',
-      //   title: '不保存修改就退出吗?',
-      //   message: '不保存退出将会丢失所有修改',
-      //   buttons: ['退出', '取消'],
-      //   cancelId: 1,
-      //   defaultId: 0,
-      // })
+      const hasChange = this.articles.some(article => article.change)
 
-      // if (result === 1) return
+      if (hasChange) {
+        const result = remote.dialog.showMessageBox(remote.getCurrentWindow(), {
+          type: 'warning',
+          title: '还有文件没有保存',
+          message: '确认退出吗？',
+          buttons: ['退出', '取消'],
+          cancelId: 1,
+          defaultId: 0,
+        })
+
+        if (result === 1) return
+      }
 
       const excludeContentArticles = this.articles.map(item => {
         const res = {}
         Object.keys(item).forEach(key => {
+          if (key === 'change') {
+            res[key] = false
+            return
+          }
           if (key !== 'content') {
             res[key] = item[key]
           }
