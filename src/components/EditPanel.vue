@@ -1,6 +1,6 @@
 <template>
   <div class="edit-panel">
-    <textarea class="edit" v-model="currentArticle.content"></textarea>
+    <textarea class="edit" :value="currentArticle.content" @input="handleInput"></textarea>
     <div class="preview" v-html="previewContent"></div>
   </div>
 </template>
@@ -18,12 +18,11 @@ export default class MenuBar extends Vue {
     return marked(this.currentArticle.content)
   }
 
-  // update (e) {
-    // const value = e.currentTarget.value
-    // console.log(value)
-  // }
-  // @Watch('content', { immediate: true })
-  // contentChanged (val) {}
+  handleInput (e: any) {
+    const newValue = e.currentTarget.value
+    this.currentArticle.content = newValue
+    this.currentArticle.change = true
+  }
 }
 </script>
 
