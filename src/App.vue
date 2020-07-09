@@ -6,8 +6,17 @@
       @saveFile="saveFile"
     ></MenuBar>
     <div class="container">
-      <Side :articles="articles" :currentArticle="currentArticle" @select="handleSelect"></Side>
-      <EditPanel v-if="currentArticle" class="container-edit" :currentArticle="currentArticle"></EditPanel>
+      <Side
+        :articles="articles"
+        :currentArticle="currentArticle"
+        @select="handleSelect"
+      ></Side>
+      <EditPanel
+        v-if="currentArticle"
+        class="container-edit"
+        :currentArticle="currentArticle"
+        @input="input"
+      ></EditPanel>
     </div>
   </div>
 </template>
@@ -34,6 +43,7 @@ export default class App extends Vue {
   articles: Article[] = []
   created() {
     window.addEventListener('keydown', e => {
+      // alt + ctrl + shift + a键
       const { altKey, ctrlKey, metaKey, keyCode } = e
       if (altKey && ctrlKey && metaKey && keyCode === 65){
         window.localStorage.clear()
@@ -58,26 +68,27 @@ export default class App extends Vue {
       this.articles.unshift(article)
     })
     ipcRenderer.on('saved-file', (event, filePath?: string) => {
-      if (filePath && this.currentArticle) {
-        this.currentArticle.filePath = filePath
+      if (filePath) {
+        this.currentArticle!.filePath = filePath
       }
-      this.currentArticle.change = false
+      this.currentArticle!.change = false
       this.showToast('保存成功')
     })
     ipcRenderer.on('close', () => {
       const hasChange = this.articles.some(article => article.change)
 
+      console.log('haschange', hasChange)
       if (hasChange) {
-        const result = remote.dialog.showMessageBox(remote.getCurrentWindow(), {
+        const index = remote.dialog.showMessageBoxSync(remote.getCurrentWindow(), {
           type: 'warning',
-          title: '还有文件没有保存',
-          message: '确认退出吗？',
+          title: '文件未保存',
+          message: '还有文件没有保存，确认退出吗？',
           buttons: ['退出', '取消'],
           cancelId: 1,
           defaultId: 0,
         })
 
-        if (result === 1) return
+        if (index === 1) return
       }
 
       const excludeContentArticles = this.articles.map(item => {
@@ -85,9 +96,7 @@ export default class App extends Vue {
         Object.keys(item).forEach(key => {
           if (key === 'change') {
             res[key] = false
-            return
-          }
-          if (key !== 'content') {
+          } else if (key !== 'content') {
             res[key] = item[key]
           }
         })
@@ -99,6 +108,11 @@ export default class App extends Vue {
       const currentWindow = remote.getCurrentWindow()
       currentWindow.destroy()
     })
+  }
+  input (newValue: string) {
+    console.log(1111, this.currentArticle)
+    this.currentArticle!.content = newValue
+    this.currentArticle!.change = true
   }
   createFile() {
     const article = new Article()
