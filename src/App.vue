@@ -42,8 +42,8 @@ export default class App extends Vue {
   currentArticle: Article | null = null
   articles: Article[] = []
   created() {
+    // alt + ctrl + shift + a键 清空本地缓存
     window.addEventListener('keydown', e => {
-      // alt + ctrl + shift + a键
       const { altKey, ctrlKey, metaKey, keyCode } = e
       if (altKey && ctrlKey && metaKey && keyCode === 65){
         window.localStorage.clear()
@@ -56,11 +56,15 @@ export default class App extends Vue {
     this.ipcRendererEvent()
     this.getStorage()
   }
+
+  // 本地拿数据
   getStorage() {
     const currentId = '' + JSON.parse(window.localStorage.getItem('current-id') || '""')
     this.articles = JSON.parse(window.localStorage.getItem('articles') || '[]')
     if (currentId) { this.handleSelect(currentId) }
   }
+
+  // 主进程通信
   ipcRendererEvent() {
     ipcRenderer.on('opened-file', (event, filePath: string, content: string) => {
       const article = new Article(content, filePath)
@@ -77,7 +81,6 @@ export default class App extends Vue {
     ipcRenderer.on('close', () => {
       const hasChange = this.articles.some(article => article.change)
 
-      console.log('haschange', hasChange)
       if (hasChange) {
         const index = remote.dialog.showMessageBoxSync(remote.getCurrentWindow(), {
           type: 'warning',
@@ -109,34 +112,42 @@ export default class App extends Vue {
       currentWindow.destroy()
     })
   }
+
+  // 输入内容改变
   input (newValue: string) {
-    console.log(1111, this.currentArticle)
     this.currentArticle!.content = newValue
     this.currentArticle!.change = true
   }
+
+  // 新建文件
   createFile() {
     const article = new Article()
     this.currentArticle = article
     this.articles.unshift(article)
   }
+
+  // 保存文件
   saveFile() {
     if (this.currentArticle) {
       ipcRenderer.send('save-file', this.currentArticle.content, this.currentArticle.filePath)
     }
   }
+
+  // 侧边栏选择文件
   handleSelect(id: string) {
     this.articles.some(item => {
       if (item.id === id) {
         if (item.content === undefined) {
           const content = fs.existsSync(item.filePath) ? fs.readFileSync(item.filePath, 'utf-8') : ''
-          this.currentArticle = new Article(content, item.filePath, item.id)
-        } else {
-          this.currentArticle = item
+          item.content = content
         }
+        this.currentArticle = item
         return true
       }
     })
   }
+
+  // 主进程显示 toast
   @ipcSend()
   showToast(content: string) {
     return content
