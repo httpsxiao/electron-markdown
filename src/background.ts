@@ -56,12 +56,6 @@ ipcMain.on('show-toast', (event, content: string) => {
   toast.show(eventWindow, content)
 })
 
-// 读取文件
-// ipcMain.on('read-file', (event, filePath: string, id: string) => {
-//   const content = fs.readFileSync(filePath, 'utf-8')
-//   event.reply('readed-file', content, filePath, id)
-// })
-
 // 打开文件
 ipcMain.on('open-file', async event => {
   const eventWindow = BrowserWindow.fromWebContents(event.sender)
