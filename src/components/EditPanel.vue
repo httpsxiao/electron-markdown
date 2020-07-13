@@ -6,22 +6,29 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue, Emit } from 'vue-property-decorator'
 import Article from '../data/Article'
 import marked from 'marked'
 
 @Component
 export default class MenuBar extends Vue {
+  currentContent = ''
+
   @Prop() currentArticle!: Article
 
   get previewContent () {
-    return marked(this.currentArticle.content)
+    return marked(this.currentContent)
   }
 
+  created() {
+    this.currentContent = this.currentArticle.content
+  }
+
+  @Emit('input')
   handleInput (e: any) {
     const newValue = e.currentTarget.value
-    this.currentArticle.content = newValue
-    this.currentArticle.change = true
+    this.currentContent = newValue
+    return newValue || ''
   }
 }
 </script>
