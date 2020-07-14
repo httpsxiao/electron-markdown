@@ -6,7 +6,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Emit } from 'vue-property-decorator'
+import { Component, Prop, Vue, Emit, Watch } from 'vue-property-decorator'
 import Article from '../data/Article'
 import marked from 'marked'
 
@@ -20,8 +20,9 @@ export default class MenuBar extends Vue {
     return marked(this.currentContent)
   }
 
-  created() {
-    this.currentContent = this.currentArticle.content
+  @Watch('currentArticle.content', { immediate: true })
+  contentChange (value: string) {
+    this.currentContent = value
   }
 
   @Emit('input')
@@ -34,6 +35,8 @@ export default class MenuBar extends Vue {
 </script>
 
 <style scoped lang="stylus">
+@import "../assets/stylus/preview.styl"
+
 .edit-panel
   display flex
   height 100%
