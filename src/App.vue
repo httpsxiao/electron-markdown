@@ -121,6 +121,11 @@ export default class App extends Vue {
 
   // 新建文件
   createFile() {
+    if (!this.currentArticle!.filePath) {
+      alert('请先保存当前文件')
+      return
+    }
+
     const article = new Article()
     this.currentArticle = article
     this.articles.unshift(article)
