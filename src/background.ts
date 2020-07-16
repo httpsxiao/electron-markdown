@@ -1,9 +1,9 @@
 'use strict'
 
-import path from 'path'
 import fs from 'fs'
 import { app, protocol, BrowserWindow, ipcMain, dialog } from 'electron'
-import Toast from './toast'
+import Toast from './background/toast'
+import initMenu from './background/menu'
 import {
   createProtocol,
   /* installVueDevtools */
@@ -40,6 +40,12 @@ function createWindow () {
     // Load the index.html when not in development
     win.loadURL('app://./index.html')
   }
+
+  win.once('ready-to-show', () => {
+    win && win.show()
+  })
+
+  win.on('focus', initMenu)
 
   win.on('close', event => {
     event.preventDefault()
@@ -124,6 +130,7 @@ app.on('ready', async () => {
 
   }
   createWindow()
+  initMenu()
 })
 
 // Exit cleanly on request from parent process in development mode.
