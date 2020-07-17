@@ -14,16 +14,17 @@ const toast = new Toast({
   width: 150
 })
 
+const windows = new Set<BrowserWindow>()
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let win: BrowserWindow | null
+// let win: BrowserWindow | null
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { secure: true, standard: true } }])
 
-function createWindow () {
+function createWindow (createByMenu = false) {
   // Create the browser window.
-  win = new BrowserWindow({
+  let win: BrowserWindow | null = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -33,19 +34,27 @@ function createWindow () {
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
-    win.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string)
+    if (createByMenu) {
+      win.loadURL(process.env.WEBPACK_DEV_SERVER_URL + '?menu=1' as string)
+    } else {
+      win.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string)
+    }
     if (!process.env.IS_TEST) win.webContents.openDevTools()
   } else {
     createProtocol('app')
     // Load the index.html when not in development
-    win.loadURL('app://./index.html')
+    if (createByMenu) {
+      win.loadURL('app://./index.html?menu=1')
+    } else {
+      win.loadURL('app://./index.html')
+    }
   }
 
   win.once('ready-to-show', () => {
     win && win.show()
   })
 
-  win.on('focus', initMenu)
+  win.on('focus', () => initMenu())
 
   win.on('close', event => {
     event.preventDefault()
@@ -53,8 +62,13 @@ function createWindow () {
   })
 
   win.on('closed', () => {
+    windows.delete(win!)
     win = null
   })
+
+  windows.add(win)
+
+  return win
 }
 
 ipcMain.on('show-toast', (event, content: string) => {
@@ -103,10 +117,10 @@ app.on('window-all-closed', () => {
   }
 })
 
-app.on('activate', () => {
+app.on('activate', (event, hasVisibleWindows) => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (win === null) {
+  if (!hasVisibleWindows) {
     createWindow()
   }
 })
@@ -146,4 +160,8 @@ if (isDevelopment) {
       app.quit()
     })
   }
+}
+
+export {
+  createWindow
 }
