@@ -1,7 +1,7 @@
 'use strict'
 
 import fs from 'fs'
-import { app, protocol, BrowserWindow, ipcMain, dialog } from 'electron'
+import { app, protocol, BrowserWindow, ipcMain, dialog, BrowserView } from 'electron'
 import Toast from './background/toast'
 import initMenu from './background/menu'
 import {
@@ -77,18 +77,18 @@ ipcMain.on('show-toast', (event, content: string) => {
 })
 
 // 打开文件
-ipcMain.on('open-file', async event => {
-  const eventWindow = BrowserWindow.fromWebContents(event.sender)
-  const result = await dialog.showOpenDialog(eventWindow, {
-    properties: ['openFile'],
-    filters: [{ name: 'markdown', extensions: ['md', 'markdown'] }]
-  })
+// ipcMain.on('open-file', async event => {
+//   const eventWindow = BrowserWindow.fromWebContents(event.sender)
+//   const result = await dialog.showOpenDialog(eventWindow, {
+//     properties: ['openFile'],
+//     filters: [{ name: 'markdown', extensions: ['md', 'markdown'] }]
+//   })
 
-  if (!result.canceled && result.filePaths && result.filePaths[0]) {
-    const content = fs.readFileSync(result.filePaths[0], 'utf-8')
-    event.reply('opened-file', result.filePaths[0], content)
-  }
-})
+//   if (!result.canceled && result.filePaths && result.filePaths[0]) {
+//     const content = fs.readFileSync(result.filePaths[0], 'utf-8')
+//     event.reply('opened-file', result.filePaths[0], content)
+//   }
+// })
 
 // 保存文件
 ipcMain.on('save-file', async (event, content, filePath) => {
