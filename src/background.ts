@@ -76,38 +76,6 @@ ipcMain.on('show-toast', (event, content: string) => {
   toast.show(eventWindow, content)
 })
 
-// 打开文件
-// ipcMain.on('open-file', async event => {
-//   const eventWindow = BrowserWindow.fromWebContents(event.sender)
-//   const result = await dialog.showOpenDialog(eventWindow, {
-//     properties: ['openFile'],
-//     filters: [{ name: 'markdown', extensions: ['md', 'markdown'] }]
-//   })
-
-//   if (!result.canceled && result.filePaths && result.filePaths[0]) {
-//     const content = fs.readFileSync(result.filePaths[0], 'utf-8')
-//     event.reply('opened-file', result.filePaths[0], content)
-//   }
-// })
-
-// 保存文件
-ipcMain.on('save-file', async (event, content, filePath) => {
-  if (filePath) {
-    fs.writeFileSync(filePath, content)
-    event.reply('saved-file')
-    return
-  }
-  const eventWindow = BrowserWindow.fromWebContents(event.sender)
-  const result = await dialog.showSaveDialog(eventWindow, {
-    title: '保存文件',
-    filters: [{ name: '文件', extensions: ['md', 'markdown'] }]
-  })
-  if (!result.canceled && result.filePath) {
-    fs.writeFileSync(result.filePath, content)
-    event.reply('saved-file', result.filePath)
-  }
-})
-
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
   // On macOS it is common for applications and their menu bar

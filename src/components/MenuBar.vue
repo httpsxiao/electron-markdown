@@ -20,7 +20,6 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Emit } from 'vue-property-decorator'
-import { ipcSend } from '../utils'
 
 @Component
 export default class MenuBar extends Vue {

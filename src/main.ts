@@ -2,7 +2,6 @@ import Vue from 'vue'
 import App from './App.vue'
 import { remote } from 'electron'
 
-
 window.addEventListener('keydown', e => {
   const { altKey, ctrlKey, metaKey, keyCode } = e
   if (altKey && ctrlKey && metaKey && keyCode === 68){
