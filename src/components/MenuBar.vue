@@ -9,6 +9,12 @@
     <div class="btn" @click="saveFile">
       保存
     </div>
+    <div class="btn" @click="removeFile">
+      移除
+    </div>
+    <div class="btn" @click="saveHtml">
+      导出HTML
+    </div>
   </div>
 </template>
 
@@ -23,11 +29,17 @@ export default class MenuBar extends Vue {
   @Emit('createFile')
   createFile() { /* 新建文件 */ }
 
-  @ipcSend()
+  @Emit('openFile')
   openFile() { /* 打开文件 */ }
 
   @Emit('saveFile')
   saveFile() { /* 保存文件 */ }
+
+  @Emit('removeFile')
+  removeFile() { /* 移除文件 */ }
+
+  @Emit('saveHtml')
+  saveHtml() { /* 导出为html */ }
 }
 </script>
 
