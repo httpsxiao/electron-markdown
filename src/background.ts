@@ -1,6 +1,5 @@
 'use strict'
 
-import fs from 'fs'
 import { app, protocol, BrowserWindow, ipcMain, dialog, BrowserView } from 'electron'
 import Toast from './background/toast'
 import initMenu from './background/menu'

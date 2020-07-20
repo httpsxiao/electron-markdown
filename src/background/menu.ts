@@ -43,8 +43,24 @@ export default function initMenu() {
         click() {
           createWindow(true)
         }
+      }, {
+        label: '关闭当前窗口',
+        accelerator: 'CommandOrControl+E',
+        click() {
+          currentWindow.webContents.send('close')
+        }
       }]
-    }
+    },
+    {
+      label: '导出',
+      submenu: [{
+        label: '导出HTML',
+        accelerator: 'CommandOrControl+H',
+        click() {
+          currentWindow.webContents.send('menu-save-html')
+        }
+      }]
+    },
   ]
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate))
