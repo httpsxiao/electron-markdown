@@ -6,6 +6,8 @@
       @openFile="openFile"
       @saveFile="saveFile"
       @removeFile="removeFile"
+      @findFile="findFile"
+      @saveHtml="saveHtml"
     ></MenuBar>
     <div class="container">
       <Side
@@ -24,7 +26,7 @@
 </template>
 
 <script lang="ts">
-import { ipcRenderer, remote } from 'electron'
+import { ipcRenderer, remote, shell } from 'electron'
 import { Component, Vue } from 'vue-property-decorator'
 import { ipcSend } from './utils'
 import fs from 'fs'
@@ -34,6 +36,8 @@ import Side from './components/Side.vue'
 import EditPanel from './components/EditPanel.vue'
 import Article from './data/Article'
 
+const currentWindow = remote.getCurrentWindow()
+
 @Component({
   components: {
     MenuBar,
@@ -41,8 +45,6 @@ import Article from './data/Article'
     EditPanel
   }
 })
-
-const currentWindow = remote.getCurrentWindow()
 
 export default class App extends Vue {
   currentArticle: Article | null = null
@@ -93,11 +95,12 @@ export default class App extends Vue {
   }
 
   // 打开文件
-  async openFile() {
-    const filePaths = await remote.dialog.showOpenDialog(currentWindow, {
+  openFile() {
+    const filePaths = remote.dialog.showOpenDialogSync(currentWindow, {
       properties: ['openFile'],
       filters: [{ name: 'markdown', extensions: ['md', 'markdown'] }]
     })
+
     if (filePaths && filePaths[0]) {
       const content = fs.readFileSync(filePaths[0], 'utf-8')
       const article = new Article(content, filePaths[0])
@@ -108,9 +111,25 @@ export default class App extends Vue {
 
   // 保存文件
   saveFile() {
-    if (this.currentArticle) {
-      ipcRenderer.send('save-file', this.currentArticle.content, this.currentArticle.filePath)
+    if (!this.currentArticle) return
+
+    const filePath = this.currentArticle.filePath
+    const content = this.currentArticle.content
+    if (filePath) {
+      fs.writeFileSync(filePath, content)
+    } else {
+      const resultPath = remote.dialog.showSaveDialogSync(currentWindow, {
+        title: '保存文件',
+        filters: [{ name: '文件', extensions: ['md', 'markdown'] }]
+      })
+      if (!resultPath) return
+
+      fs.writeFileSync(resultPath, content)
+      this.currentArticle.filePath = filePath
     }
+
+    this.currentArticle.change = false
+    this.showToast('保存成功')
   }
 
   // 移除文件
@@ -132,8 +151,20 @@ export default class App extends Vue {
       title: '保存为HTML',
       filters: [{ name: 'html', extensions: ['html'] }]
     })
+
     if (filePath) {
       fs.writeFileSync(filePath, marked(this.currentArticle.content))
+      this.showToast('导出成功')
+    }
+  }
+
+  // 定位文件
+  findFile () {
+    if (!this.currentArticle) return
+    if (this.currentArticle.filePath) {
+      shell.showItemInFolder(this.currentArticle.filePath)
+    } else {
+      alert('文件还未保存')
     }
   }
 
@@ -176,19 +207,15 @@ export default class App extends Vue {
       this.removeFile()
     })
 
-    ipcRenderer.on('saved-file', (event, filePath?: string) => {
-      if (filePath) {
-        this.currentArticle!.filePath = filePath
-      }
-      this.currentArticle!.change = false
-      this.showToast('保存成功')
+    ipcRenderer.on('menu-save-html', () => {
+      this.saveHtml()
     })
 
     ipcRenderer.on('close', () => {
       const hasChange = this.articles.some(article => article.change)
 
       if (hasChange) {
-        const index = remote.dialog.showMessageBoxSync(remote.getCurrentWindow(), {
+        const index = remote.dialog.showMessageBoxSync(currentWindow, {
           type: 'warning',
           title: '文件未保存',
           message: '还有文件没有保存，确认退出吗？',
@@ -214,7 +241,6 @@ export default class App extends Vue {
       window.localStorage.setItem('articles', JSON.stringify(excludeContentArticles))
       this.currentArticle && window.localStorage.setItem('current-id', this.currentArticle.id)
 
-      const currentWindow = remote.getCurrentWindow()
       currentWindow.destroy()
     })
   }
