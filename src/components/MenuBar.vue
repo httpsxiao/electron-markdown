@@ -15,14 +15,23 @@
     <div class="btn" @click="saveHtml">
       导出HTML
     </div>
+    <div class="btn" @click="findFile">
+      打开所在位置
+    </div>
+    <div class="btn" @click="togglePreview">
+      {{ showPreview ? '关闭预览' : '显示预览' }}
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue, Emit } from 'vue-property-decorator'
+import bus from '../utils/bus'
 
 @Component
 export default class MenuBar extends Vue {
+  showPreview = true
+
   @Prop() private msg!: string
 
   @Emit('createFile')
@@ -39,6 +48,14 @@ export default class MenuBar extends Vue {
 
   @Emit('saveHtml')
   saveHtml() { /* 导出为html */ }
+
+  @Emit('findFile')
+  findFile() { /* 打开所在位置 */ }
+
+  togglePreview () {
+    this.showPreview = !this.showPreview
+    bus.$emit('togglePreview', this.showPreview)
+  }
 }
 </script>
 

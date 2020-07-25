@@ -1,23 +1,31 @@
 <template>
   <div class="edit-panel">
     <textarea class="edit" :value="currentArticle.content" @input="handleInput"></textarea>
-    <div class="preview" v-html="previewContent"></div>
+    <div v-if="showPreview" class="preview" v-html="previewContent"></div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue, Emit, Watch } from 'vue-property-decorator'
-import Article from '../data/Article'
 import marked from 'marked'
+import Article from '../data/Article'
+import bus from '../utils/bus'
 
 @Component
 export default class MenuBar extends Vue {
   currentContent = ''
+  showPreview = true
 
   @Prop() currentArticle!: Article
 
+  mounted () {
+    bus.$on('togglePreview', (isShow: boolean) => {
+      this.showPreview = isShow
+    })
+  }
+
   get previewContent () {
-    return marked(this.currentContent)
+    return marked(this.currentContent || '')
   }
 
   @Watch('currentArticle.content', { immediate: true })
