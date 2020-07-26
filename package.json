@@ -2,7 +2,7 @@
   "name": "electron-markdown",
   "version": "0.1.0",
   "private": true,
-  "description": "基于 electron 的 markdown 编辑器",
+  "description": "基于 electron 的简洁 markdown 编辑器",
   "author": {
     "name": "httpsxiao",
     "email": "day_clear@163.com"

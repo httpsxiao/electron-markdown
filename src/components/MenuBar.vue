@@ -1,22 +1,7 @@
 <template>
   <div class="menu-bar">
-    <div class="btn" @click="createFile">
-      新建
-    </div>
-    <div class="btn" @click="openFile">
-      打开
-    </div>
-    <div class="btn" @click="saveFile">
-      保存
-    </div>
-    <div class="btn" @click="removeFile">
-      移除
-    </div>
-    <div class="btn" @click="saveHtml">
-      导出HTML
-    </div>
-    <div class="btn" @click="findFile">
-      打开所在位置
+    <div v-for="item in operations" class="btn" @click="handleClick(item.type)" :key="item.label">
+      {{item.label}}
     </div>
     <div class="btn" @click="togglePreview">
       {{ showPreview ? '关闭预览' : '显示预览' }}
@@ -25,32 +10,40 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Emit } from 'vue-property-decorator'
+import { Component, Prop, Vue } from 'vue-property-decorator'
 import bus from '../utils/bus'
 
 @Component
 export default class MenuBar extends Vue {
   showPreview = true
+  operations = [{
+    label: '新建',
+    type: 'createFile'
+  }, {
+    label: '打开',
+    type: 'openFile'
+  }, {
+    label: '保存',
+    type: 'saveFile'
+  }, {
+    label: '移除',
+    type: 'removeFile'
+  }, {
+    label: '清空',
+    type: 'clearFile'
+  }, {
+    label: '导出HTML',
+    type: 'saveHtml'
+  }, {
+    label: '打开所在位置',
+    type: 'findFile'
+  }]
 
   @Prop() private msg!: string
 
-  @Emit('createFile')
-  createFile() { /* 新建文件 */ }
-
-  @Emit('openFile')
-  openFile() { /* 打开文件 */ }
-
-  @Emit('saveFile')
-  saveFile() { /* 保存文件 */ }
-
-  @Emit('removeFile')
-  removeFile() { /* 移除文件 */ }
-
-  @Emit('saveHtml')
-  saveHtml() { /* 导出为html */ }
-
-  @Emit('findFile')
-  findFile() { /* 打开所在位置 */ }
+  handleClick(type: string) {
+    this.$emit(type)
+  }
 
   togglePreview () {
     this.showPreview = !this.showPreview
