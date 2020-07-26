@@ -6,6 +6,7 @@
       @openFile="openFile"
       @saveFile="saveFile"
       @removeFile="removeFile"
+      @clearFile="clearFile"
       @findFile="findFile"
       @saveHtml="saveHtml"
     ></MenuBar>
@@ -27,7 +28,7 @@
 
 <script lang="ts">
 import { ipcRenderer, remote, shell } from 'electron'
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue, Watch } from 'vue-property-decorator'
 import { ipcSend } from './utils'
 import fs from 'fs'
 import marked from 'marked'
@@ -50,17 +51,6 @@ export default class App extends Vue {
   currentArticle: Article | null = null
   articles: Article[] = []
   created() {
-    // alt + ctrl + shift + a键 清空本地缓存
-    window.addEventListener('keydown', e => {
-      const { altKey, ctrlKey, metaKey, keyCode } = e
-      if (altKey && ctrlKey && metaKey && keyCode === 65){
-        window.localStorage.clear()
-        this.articles = []
-        this.currentArticle = null
-        e.preventDefault()
-      }
-    }, false)
-
     this.ipcRendererEvent()
     if (window.location.search.indexOf('menu') === -1) {
       this.getStorage()
@@ -90,8 +80,8 @@ export default class App extends Vue {
     }
 
     const article = new Article()
-    this.currentArticle = article
     this.articles.unshift(article)
+    this.handleSelect(article.id)
   }
 
   // 打开文件
@@ -102,10 +92,19 @@ export default class App extends Vue {
     })
 
     if (filePaths && filePaths[0]) {
+      const hasPathMatch = this.articles.some(article => {
+        if (filePaths[0] === article.filePath) {
+          this.handleSelect(article.id)
+          return true
+        }
+      })
+
+      if (hasPathMatch) return
+
       const content = fs.readFileSync(filePaths[0], 'utf-8')
       const article = new Article(content, filePaths[0])
-      this.currentArticle = article
       this.articles.unshift(article)
+      this.handleSelect(article.id)
     }
   }
 
@@ -137,10 +136,17 @@ export default class App extends Vue {
     if (this.currentArticle && this.articles.length > 0) {
       const idx = this.articles.findIndex(item => item.id === this.currentArticle!.id)
       this.articles.splice(idx, 1)
-      if (this.articles[0]) {
-        this.currentArticle = this.articles[0]
+      if (this.articles[0] && this.articles[0].id) {
+        this.handleSelect(this.articles[0].id)
       }
     }
+  }
+
+  // 清空文件
+  clearFile() {
+    window.localStorage.clear()
+    this.articles = []
+    this.handleSelect('')
   }
 
   // 导出为 HTML
@@ -170,7 +176,7 @@ export default class App extends Vue {
 
   // 侧边栏选择文件
   handleSelect(id: string) {
-    this.articles.some(item => {
+    const idMatch = this.articles.some(item => {
       if (item.id === id) {
         if (item.content === undefined) {
           const content = fs.existsSync(item.filePath) ? fs.readFileSync(item.filePath, 'utf-8') : ''
@@ -180,6 +186,10 @@ export default class App extends Vue {
         return true
       }
     })
+
+    if (!idMatch) {
+      this.currentArticle = null
+    }
   }
 
   // 主进程显示 toast
@@ -243,6 +253,13 @@ export default class App extends Vue {
 
       currentWindow.destroy()
     })
+  }
+
+  @Watch('currentArticle', { immediate: true })
+  currentArticleChange (value: any) {
+    if (value && value.filePath) {
+      window.document.title = value.filePath.slice(1).replace(/\//g, ' > ')
+    }
   }
 }
 </script>
